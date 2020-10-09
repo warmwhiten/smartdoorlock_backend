@@ -15,12 +15,13 @@ from rest_framework.response import Response
 from boto3.session import Session
 from src.settings import AWS_REGION
 from src.settings import S3_ACCESS_URL
+from src.settings import S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_STORAGE_BUCKET_NAME
 
 from datetime import datetime, timedelta
 # Create your views here.
 
 class VideoDownload(APIView) :
-    def get(self, request, format=None) :
+    def get(self, request, format = None) :
         try :   
             request_id = request.GET.get('vidname')
             if request_id == 'None' :
@@ -43,4 +44,32 @@ class VideoDownload(APIView) :
                 'date' : datetime.now()
             }, status = status.HTTP_404_NOT_FOUND)
 
+class VideoAutoDelete(APIView) :
+    def post(self, request, format = None) :
+            checkdate = datetime.now() + timedelta(days = -7)
+            quaryset = Video.objects.filter(created__lt = checkdate)
+            session = boto3.session.Session(aws_access_key_id = S3_ACCESS_KEY_ID, aws_secret_access_key = S3_SECRET_ACCESS_KEY, region_name = AWS_REGION)
+            s3 = session.client('s3')
+            for delvid in quaryset :
+                s3.delete_object(Bucket = S3_STORAGE_BUCKET_NAME, Key = str(delvid.vidname))
+            quaryset.delete()
+            return Response(status = status.HTTP_200_OK)
 
+class VideoDelete(APIView) :
+    def post(self, request, format = None) :
+        try : 
+            request_id = request.GET.get('vidname')
+            if request_id == 'None' :
+                raise FieldDoesNotExist
+            session = boto3.session.Session(aws_access_key_id = S3_ACCESS_KEY_ID, aws_secret_access_key = S3_SECRET_ACCESS_KEY, region_name = AWS_REGION)
+            s3 = session.client('s3')
+            
+            target = Video.objects.get(vidname = request_id)
+            s3.delete_object(Bucket = S3_STORAGE_BUCKET_NAME, Key = str(target.vidname))
+            target.delete()
+            return Response(status = status.HTTP_200_OK)
+        except FieldDoesNotExist as error :
+            return Response({
+                'error' : "FieldDoesNotExist ",
+                'date' : datetime.now()
+            }, status = status.HTTP_400_BAD_REQUEST)
