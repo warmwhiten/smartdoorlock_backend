@@ -1,0 +1,8 @@
+{
+    "aws" : {
+        "access_key_id" : "AKIA5ZZ6DPFONI4VDIPH",
+        "secret_access_key" : "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",
+        "s3_bucket_name" : "khuproject2020",
+        "s3_access_url" : "https://khuproject2020.s3.ap-northeast-2.amazonaws.com/"
+    }
+}

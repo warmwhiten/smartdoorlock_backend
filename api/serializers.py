@@ -1,12 +1,13 @@
 from api.models import Phone, Video
 from rest_framework import serializers
 
+
 class PhoneSerializer(serializers.ModelSerializer) :
     class Meta :
-        model = models.Phone
+        model = Phone
         fields = '__all__'
 
 class VideoSerializer(serializers.ModelSerializer) :
     class Meta :
-        model = models.Video
+        model = Video
         fields = '__all__'
