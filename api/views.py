@@ -11,12 +11,12 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.request import Request
 from rest_framework.response import Response
-
+"""
 from boto3.session import Session
 from src.settings import AWS_REGION
 from src.settings import S3_ACCESS_URL
 from src.settings import S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_STORAGE_BUCKET_NAME
-
+"""
 from datetime import datetime, timedelta
 # Create your views here.
 
