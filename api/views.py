@@ -20,7 +20,7 @@ from src.settings import S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_STORAGE_BUCK
 from datetime import datetime, timedelta
 # Create your views here.
 
-class VideoDownload(APIView) :
+class Video(APIView) :
     def get(self, request, format = None) :
         try :   
             request_id = request.GET.get('vidname')
@@ -44,18 +44,6 @@ class VideoDownload(APIView) :
                 'date' : datetime.now()
             }, status = status.HTTP_404_NOT_FOUND)
 
-class VideoAutoDelete(APIView) :
-    def post(self, request, format = None) :
-            checkdate = datetime.now() + timedelta(days = -7)
-            quaryset = Video.objects.filter(created__lt = checkdate)
-            session = boto3.session.Session(aws_access_key_id = S3_ACCESS_KEY_ID, aws_secret_access_key = S3_SECRET_ACCESS_KEY, region_name = AWS_REGION)
-            s3 = session.client('s3')
-            for delvid in quaryset :
-                s3.delete_object(Bucket = S3_STORAGE_BUCKET_NAME, Key = str(delvid.vidname))
-            quaryset.delete()
-            return Response(status = status.HTTP_200_OK)
-
-class VideoDelete(APIView) :
     def post(self, request, format = None) :
         try : 
             request_id = request.GET.get('vidname')
@@ -73,3 +61,16 @@ class VideoDelete(APIView) :
                 'error' : "FieldDoesNotExist ",
                 'date' : datetime.now()
             }, status = status.HTTP_400_BAD_REQUEST)
+
+class CheckDate(APIView) :
+    def post(self, request, format = None) :
+            checkdate = datetime.now() + timedelta(days = -7)
+            quaryset = Video.objects.filter(created__lt = checkdate)
+            session = boto3.session.Session(aws_access_key_id = S3_ACCESS_KEY_ID, aws_secret_access_key = S3_SECRET_ACCESS_KEY, region_name = AWS_REGION)
+            s3 = session.client('s3')
+            for delvid in quaryset :
+                s3.delete_object(Bucket = S3_STORAGE_BUCKET_NAME, Key = str(delvid.vidname))
+            quaryset.delete()
+            return Response(status = status.HTTP_200_OK)
+
+    

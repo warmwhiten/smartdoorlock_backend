@@ -3,7 +3,7 @@ from django.conf import settings
 from django.utils import timezone
 
 # Create your models here.
-class Phone(models.Model) :
+class Device(models.Model) :
     username = models.CharField(max_length = 255)
     and_id = models.CharField(max_length = 255, primary_key = True)
 

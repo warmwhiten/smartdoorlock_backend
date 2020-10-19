@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 class PhoneSerializer(serializers.ModelSerializer) :
     class Meta :
-        model = Phone
+        model = Device
         fields = '__all__'
 
 class VideoSerializer(serializers.ModelSerializer) :
