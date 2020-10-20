@@ -4,8 +4,8 @@ from django.core import serializers
 from django.core.exceptions import FieldDoesNotExist, ObjectDoesNotExist
 from django.shortcuts import render
 
-from api.models import Video, Phone
-from api.serializers import VideoSerializer, PhoneSerializer
+from api.models import Video, Device, History, Lock
+from api.serializers import VideoSerializer, DeviceSerializer, HistorySerializer
 
 from rest_framework import status
 from rest_framework.views import APIView

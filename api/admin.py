@@ -1,5 +1,7 @@
 from django.contrib import admin
-from .models import Video, Phone
+from .models import Video, Device, History, Lock
 # Register your models here.
 admin.site.register(Video)
-admin.site.register(Phone)
+admin.site.register(Device)
+admin.site.register(History)
+admin.site.register(Lock)

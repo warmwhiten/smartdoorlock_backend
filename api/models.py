@@ -17,5 +17,5 @@ class Lock(models.Model) :
     state = models.BooleanField(default = True)
 
 class History(models.Model) :
-    device = ForeignKey(Device, on_delete=models.CASCADE)
-    ctrtime = created = models.DateTimeField(default = timezone.now)
+    device = models.ForeignKey(Device, on_delete = models.CASCADE)
+    ctrtime =models.DateTimeField(default = timezone.now)
