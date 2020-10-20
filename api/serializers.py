@@ -1,8 +1,8 @@
-from api.models import Phone, Video
+from api.models import Device, Video, History
 from rest_framework import serializers
 
 
-class PhoneSerializer(serializers.ModelSerializer) :
+class DeviceSerializer(serializers.ModelSerializer) :
     class Meta :
         model = Device
         fields = '__all__'
@@ -10,4 +10,9 @@ class PhoneSerializer(serializers.ModelSerializer) :
 class VideoSerializer(serializers.ModelSerializer) :
     class Meta :
         model = Video
+        fields = '__all__'
+
+class HistorySerializer(serializers.ModelSerializer) :
+    class Meta :
+        model = History
         fields = '__all__'

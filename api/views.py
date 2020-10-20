@@ -44,7 +44,7 @@ class Video(APIView) :
                 'date' : datetime.now()
             }, status = status.HTTP_404_NOT_FOUND)
 
-    def post(self, request, format = None) :
+    def delete(self, request, format = None) :
         try : 
             request_id = request.GET.get('vidname')
             if request_id == 'None' :
@@ -63,7 +63,7 @@ class Video(APIView) :
             }, status = status.HTTP_400_BAD_REQUEST)
 
 class CheckDate(APIView) :
-    def post(self, request, format = None) :
+    def delete(self, request, format = None) :
             checkdate = datetime.now() + timedelta(days = -7)
             quaryset = Video.objects.filter(created__lt = checkdate)
             session = boto3.session.Session(aws_access_key_id = S3_ACCESS_KEY_ID, aws_secret_access_key = S3_SECRET_ACCESS_KEY, region_name = AWS_REGION)
