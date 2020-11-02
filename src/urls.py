@@ -20,6 +20,8 @@ from api import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('video/<str:vidname>/', views.Video.as_view()),
-    path('checkDate/', views.CheckDate.as_view()),
+    path('api/video/', views.VideoList.as_view()),
+    path('api/video/<int:vid_id>/', views.VideoDownload.as_view()),
+    path('auto/checkDate/', views.CheckDate.as_view()),
+    path('api/setting/', views.Recording.as_view()),
 ]

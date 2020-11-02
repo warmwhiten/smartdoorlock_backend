@@ -1,4 +1,4 @@
-from api.models import Device, Video, History
+from api.models import Device, Video, Lock, History, Record, Door
 from rest_framework import serializers
 
 
@@ -15,4 +15,9 @@ class VideoSerializer(serializers.ModelSerializer) :
 class HistorySerializer(serializers.ModelSerializer) :
     class Meta :
         model = History
+        fields = '__all__'
+
+class RecordSerializer(serializers.ModelSerializer) :
+    class Meta :
+        model = Record
         fields = '__all__'
