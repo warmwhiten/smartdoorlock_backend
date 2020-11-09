@@ -5,19 +5,19 @@
     ~$ python3 --version
     Python 3.8.2
 
-Python 가상환경 사용을 권장합니다.
-
 ### pip, django
 
     ~$ python3 -m pip install --upgrade pip
     ~$ pip install django~=3.1.2
     ...
     Successfully installed asgiref-3.2.10 django-3.1.2 pytz-2020.1 sqlparse-0.3.1
+    ~$ pip install -r requirements.txt
+    ...
     
 ### Database
 
-    ~/smartdoorlock-backend$ python manage.py migrate
     ~/smartdoorlock-backend$ python manage.py makemigrations
+    ~/smartdoorlock-backend$ python manage.py migrate
     
 ### Run Server
 
