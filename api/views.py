@@ -94,14 +94,10 @@ class CheckDate(APIView) :
 class Recording(APIView) :
     def get(self, request, format = None) :
         try :
-            '''
-            request_id = request.GET.get('door_id')
-            target = Record.objects.filter(door_id = request_id)
-            '''
-            target = Record.objects.all()
-            serializer = RecordSerializer(target, many = True)
+            target = Record.objects.get(id = 1)
+            serializer = RecordSerializer(target, many = False)
             res = {
-                'recording' : serializer.data
+                'recording' : serializer.data['recording']
             }
             return Response(res, status = status.HTTP_200_OK)
         except FieldDoesNotExist as error :
@@ -112,10 +108,7 @@ class Recording(APIView) :
 
     def put(self, request, format = None) :
         try :  
-            request_id = request.GET.get('door_id')
-            if not request_id :
-                raise FieldDoesNotExist
-            target = Record.objects.filter(door_id = request_id)
+            target = Record.objects.filter(id = 1)
             target.update(recording = request.data['recording'])
             return Response(status = status.HTTP_200_OK)
         except FieldDoesNotExist as error :

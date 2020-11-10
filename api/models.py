@@ -16,7 +16,7 @@ class Video(models.Model) :
     s3_link = models.CharField(max_length = 255)
 
 class Lock(models.Model) :
-    door = models.ForeignKey(Door, on_delete=models.CASCADE)
+    id = models.IntegerField(primary_key = True)
     state = models.BooleanField(default = True)
 
 class History(models.Model) :
@@ -24,5 +24,5 @@ class History(models.Model) :
     ctrtime = models.DateTimeField(default = timezone.now)
 
 class Record(models.Model) :
-    door = models.ForeignKey(Door, on_delete=models.CASCADE)
+    id = models.IntegerField(primary_key = True)
     recording = models.BooleanField(default = True)
