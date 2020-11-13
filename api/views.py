@@ -1,9 +1,12 @@
 import boto3
+import botocore
+import threading
 from django.http import HttpResponse
 from django.core import serializers
 from django.core.exceptions import FieldDoesNotExist, ObjectDoesNotExist
 from django.shortcuts import render
 
+from api.videorecord import record
 from api.models import Video, Device, History, Lock, Record, Door
 from api.serializers import VideoSerializer, DeviceSerializer, HistorySerializer, RecordSerializer
 
@@ -17,16 +20,13 @@ from src.settings import AWS_REGION
 from src.settings import S3_ACCESS_URL
 from src.settings import S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_STORAGE_BUCKET_NAME
 """
+import time
 from datetime import datetime, timedelta
 # Create your views here.
 
 # 비디오 목록 조회
 class VideoList(APIView) : 
     def get(self, request, format = None) :
-        '''
-            request_id = request.GET.get('last_id') # requst의 last_id 받아옴
-            queryset = Video.objects.filter(vid_id__range = (request_id, request_id + 10))   # 쿼리셋 필터로 vid_id의 범위가 last_id ~ las_id + 10인 객체 찾기
-        '''
         queryset = Video.objects.all()
         serializer = VideoSerializer(queryset, many = True)
         res = {     
@@ -35,16 +35,16 @@ class VideoList(APIView) :
         return Response(res, status = status.HTTP_200_OK) 
 
 # 비디오 수동 삭제
-    def delete(self, request, vid_id, format = None) :  # request URI에 vid_id가 포함되어있음 : api/video/{vid_id}
+    def delete(self, request, vid_name, format = None) :  # request URI에 vid_name가 포함되어있음 : api/video/{vid_name}
         try : 
-            request_id = vid_id
+            request_id = vid_name
             if request_id == 'None' :
                 raise FieldDoesNotExist
             session = boto3.session.Session(aws_access_key_id = S3_ACCESS_KEY_ID, aws_secret_access_key = S3_SECRET_ACCESS_KEY, region_name = AWS_REGION)
             s3 = session.client('s3')
             
-            target = Video.objects.get(vid_id = request_id)
-            s3.delete_object(Bucket = S3_STORAGE_BUCKET_NAME, Key = str(target.vid_id))
+            target = Video.objects.get(vid_name = request_id)
+            s3.delete_object(Bucket = S3_STORAGE_BUCKET_NAME, Key = str(target.vid_name))
             target.delete()
             return Response(status = status.HTTP_200_OK)
         except FieldDoesNotExist as error :
@@ -55,9 +55,9 @@ class VideoList(APIView) :
 
 # 비디오 확인(다운로드)
 class VideoDownload(APIView) :
-    def get(self, request, vid_id, format = None) : # 요청한 URI에 vid_id가 포함되어있음 ex) api/video/1
+    def get(self, request, vid_name, format = None) : # 요청한 URI에 vid_name가 포함되어있음
         try :   
-            request_id = vid_id
+            request_id = vid_name
             if request_id == 'None' :
                 raise FieldDoesNotExist   
             download_url = S3_ACCESS_URL + str(request_id)  # S3 다운로드 링크 변환
@@ -86,7 +86,7 @@ class CheckDate(APIView) :
             session = boto3.session.Session(aws_access_key_id = S3_ACCESS_KEY_ID, aws_secret_access_key = S3_SECRET_ACCESS_KEY, region_name = AWS_REGION)
             s3 = session.client('s3')
             for delvid in quaryset :
-                s3.delete_object(Bucket = S3_STORAGE_BUCKET_NAME, Key = str(delvid.vid_id))
+                s3.delete_object(Bucket = S3_STORAGE_BUCKET_NAME, Key = str(delvid.vid_name))
             quaryset.delete()
             return Response(status = status.HTTP_200_OK)
 
@@ -110,6 +110,10 @@ class Recording(APIView) :
         try :  
             target = Record.objects.filter(id = 1)
             target.update(recording = request.data['recording'])
+
+            if request.data['recording'] :
+                threading.Thread(target=record).start()
+
             return Response(status = status.HTTP_200_OK)
         except FieldDoesNotExist as error :
             return Response({

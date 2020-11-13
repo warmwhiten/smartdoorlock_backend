@@ -11,9 +11,8 @@ class Device(models.Model) :
     created = models.DateTimeField(default = timezone.now)
 
 class Video(models.Model) :
-    vid_id = models.IntegerField(primary_key = True)
+    vid_name = models.CharField(max_length = 255, primary_key = True)
     created = models.DateTimeField(default = timezone.now)
-    s3_link = models.CharField(max_length = 255)
 
 class Lock(models.Model) :
     id = models.IntegerField(primary_key = True)
