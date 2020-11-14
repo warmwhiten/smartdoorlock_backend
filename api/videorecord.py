@@ -21,8 +21,8 @@ def record() :
     #'''
     # rpi setting
     GPIO.setmode(GPIO.BCM)
-    PIR_PIN = 7
-    GPIO.setup(PIR_PIN, GPIO.IN)
+    pir_pin = 7
+    GPIO.setup(pir_pin, GPIO.IN)
     camera = PiCamera()
     #'''
 
@@ -33,7 +33,7 @@ def record() :
             serializer = RecordSerializer(target, many = False)
             state = serializer.data['recording']
             '''
-            if GPIO.input(PIR_PIN):  # motion detected
+            if GPIO.input(pir_pin):  # motion detected
                 # take a video
                 camera.resolution = [320, 240]
                 camera.start_preview()
@@ -44,7 +44,9 @@ def record() :
                 camera.start_recording(output=vid_path)
                 time.sleep(1)
                 camera.capture(thumbnail_path)
-                time.sleep(5)
+                while GPIO.input(pir_pin):
+		    print("recoring..")
+		    time.sleep(2)
                 camera.stop_recording()
                 camera.stop_preview()
 
