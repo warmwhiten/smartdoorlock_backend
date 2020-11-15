@@ -24,4 +24,7 @@ urlpatterns = [
     path('api/video/<str:vid_name>', views.VideoDownload.as_view()),
     path('auto/checkDate', views.CheckDate.as_view()),
     path('api/setting', views.Recording.as_view()),
+    path('api/auth', views.Login.as_view()),
+    path('api/device', views.Device.as_view()),
+    path('api/history', view.History.as_view()),
 ]

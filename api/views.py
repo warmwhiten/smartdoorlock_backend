@@ -24,6 +24,82 @@ import time
 from datetime import datetime, timedelta
 # Create your views here.
 
+#로그인 및 토큰 반환
+class Login(APIView) : 
+    def get(self, request, format = None) : # request query에 door_id 포함되어있음 : api/auth?door_id=12345
+        try :
+            request_id = request.GET.get('door_id', None)
+            if request_id == 'None' :
+                raise FieldDoesNotExist
+            queryset = Door.objects.filter(door_id = request_id) # door_id 유효성 검색
+            if queryset.exists() # 유효할 때
+                res = {
+                    'is_available' : True
+                    'access_token' : '토큰' # 토큰 도입 후 수정 필요
+                }
+            else
+                res = {
+                    'is_available' : False
+                }
+
+            return Response(res, status = status.HTTP_200_OK)
+
+        except FieldDoesNotExist as error :
+            return Response({
+                'error' : "FieldDoesNotExist ",
+                'date' : datetime.now()
+            }, status = status.HTTP_400_BAD_REQUEST)
+
+#기기 관련 api
+class Device(APIView) :
+    # 기기 추가
+    def post(self, request, format = None) : # request query에 device_id 포함되어있음 : api/device?device_id=12345
+        try : 
+            request_id = request.POST.get('device_id', None)
+            if request_id == 'None' :
+                raise FieldDoesNotExist
+            queryset = Device.objects.create(rfid_id = request_id)
+
+        except FieldDoesNotExist as error : 
+            return Response({
+                'error' : "FieldDoesNotExist ",
+                'date' : datetime.now()
+            }, status = status.HTTP_400_BAD_REQUEST)
+
+    # 기기 목록 조회
+    def get(self, request, format = None) : 
+        queryset = Device.objects.all()
+        serializer = DeviceSerializer(queryset, many = True)
+        res = {
+            'deviceList': serializer.data
+        }
+        return Response(res, status = status.HTTP_200_OK)
+
+    # 기기 삭제
+    def delete(self, request, device_id, format = None): # request URI에 device_id 포함
+        try : 
+            request_id = device_id
+            if request_id == 'None':
+                raise FieldDoesNotExist
+            queryset = Device.objects.get(device_id=request_id)
+            queryset.delete()
+        
+        except FieldDoesNotExist as error : 
+            return Response({
+                'error' : "FieldDoesNotExist ",
+                'date' : datetime.now()
+            }, status = status.HTTP_400_BAD_REQUEST)
+
+# 원격 잠금 해제 기록 조회
+class History(APIView):
+    def get(self, request, format = None) : 
+        queryset = History.objects.all()
+        serializer = HistorySerializer(queryset, many = True)
+        res = {
+            'deviceList': serializer.data
+        }
+        return Response(res, status = status.HTTP_200_OK)
+
 # 비디오 목록 조회
 class VideoList(APIView) : 
     def get(self, request, format = None) :
