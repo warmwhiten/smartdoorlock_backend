@@ -21,7 +21,7 @@ class Lock(models.Model) :
 
 class RemoteHistory(models.Model) :
     device_name = models.CharField(max_length = 255)
-    ctrtime = models.DateTimeField(default = timezone.now)
+    created = models.DateTimeField(default = timezone.now)
 
 class Record(models.Model) :
     id = models.IntegerField(primary_key = True)
