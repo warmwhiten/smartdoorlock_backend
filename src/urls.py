@@ -26,5 +26,5 @@ urlpatterns = [
     path('api/setting', views.Recording.as_view()),
     path('api/auth', views.Login.as_view()),
     path('api/device', views.Device.as_view()),
-    path('api/history', view.History.as_view()),
+    path('api/remote', view.Remote.as_view()),
 ]
