@@ -13,6 +13,7 @@ class Device(models.Model) :
 class Video(models.Model) :
     vid_name = models.CharField(max_length = 255, primary_key = True)
     created = models.DateTimeField(default = timezone.now)
+    thumb = models.CharField(max_length = 255)
 
 class Lock(models.Model) :
     id = models.IntegerField(primary_key = True)

@@ -110,10 +110,6 @@ class Recording(APIView) :
         try :  
             target = Record.objects.filter(id = 1)
             target.update(recording = request.data['recording'])
-
-            if request.data['recording'] :
-                threading.Thread(target=record).start()
-
             return Response(status = status.HTTP_200_OK)
         except FieldDoesNotExist as error :
             return Response({
