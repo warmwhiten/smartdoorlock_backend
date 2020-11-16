@@ -7,7 +7,7 @@ class Door(models.Model) :
     door_id = models.CharField(max_length = 255, primary_key = True)
 
 class Device(models.Model) :
-    rfid_id = models.CharField(max_length = 255, primary_key = True)
+    device_id = models.CharField(max_length = 255, primary_key = True)
     created = models.DateTimeField(default = timezone.now)
 
 class Video(models.Model) :

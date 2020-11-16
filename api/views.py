@@ -52,10 +52,21 @@ class Login(APIView) :
 
 #기기 관련 api
 class Device(APIView) :
+    # 기기 목록 조회
+    def get(self, request, format = None) : 
+        queryset = Device.objects.all()
+        serializer = DeviceSerializer(queryset, many = True)
+        res = {
+            'deviceList': serializer.data
+        }
+        return Response(res, status = status.HTTP_200_OK)
+
+
     # 기기 추가
-    def post(self, request, format = None) : # request query에 device_id 포함되어있음 : api/device?device_id=12345
+    def post(self, request, format = None) : # request body에 device_id 포함되어있음 
         try : 
-            request_id = request.POST.get('device_id', None)
+            data = json.loads(request.body)
+            request_id = data.get('device_id', None)
             if request_id == 'None' :
                 raise FieldDoesNotExist
             queryset = Device.objects.create(rfid_id = request_id)
@@ -66,19 +77,13 @@ class Device(APIView) :
                 'date' : datetime.now()
             }, status = status.HTTP_400_BAD_REQUEST)
 
-    # 기기 목록 조회
-    def get(self, request, format = None) : 
-        queryset = Device.objects.all()
-        serializer = DeviceSerializer(queryset, many = True)
-        res = {
-            'deviceList': serializer.data
-        }
-        return Response(res, status = status.HTTP_200_OK)
+
 
     # 기기 삭제
-    def delete(self, request, device_id, format = None): # request URI에 device_id 포함
+    def delete(self, request, format = None): # request body에 device_id 포함
         try : 
-            request_id = device_id
+            data = json.loads(request.body)
+            request_id = data.get('device_id', None)
             if request_id == 'None':
                 raise FieldDoesNotExist
             queryset = Device.objects.get(device_id=request_id)
@@ -90,15 +95,20 @@ class Device(APIView) :
                 'date' : datetime.now()
             }, status = status.HTTP_400_BAD_REQUEST)
 
-# 원격 잠금 해제 기록 조회
-class History(APIView):
+# 원격 잠금 해제 
+class Remote(APIView):
+    # 원격 잠금 해제 기록 조회
     def get(self, request, format = None) : 
+        #models.py의 class History 사용.
         queryset = History.objects.all()
         serializer = HistorySerializer(queryset, many = True)
         res = {
-            'deviceList': serializer.data
+            "remoteHistoryList": serializer.data
         }
         return Response(res, status = status.HTTP_200_OK)
+
+    
+
 
 # 비디오 목록 조회
 class VideoList(APIView) : 
