@@ -7,8 +7,8 @@ from django.core.exceptions import FieldDoesNotExist, ObjectDoesNotExist
 from django.shortcuts import render
 
 from api.videorecord import record
-from api.models import Video, Device, History, Lock, Record, Door
-from api.serializers import VideoSerializer, DeviceSerializer, HistorySerializer, RecordSerializer
+from api.models import Video, Device, RemoteHistory, Lock, Record, Door
+from api.serializers import VideoSerializer, DeviceSerializer, RemoteHistorySerializer, RecordSerializer
 
 from rest_framework import status
 from rest_framework.views import APIView
@@ -27,9 +27,9 @@ from datetime import datetime, timedelta
 #로그인 및 토큰 반환
 class Login(APIView) : 
     def get(self, request, format = None) : # request query에 door_id 포함되어있음 : api/auth?door_id=12345
-        try :
+        try :
             request_id = request.GET.get('door_id', None)
-            if request_id == 'None' :
+            if request_id == 'None' :
                 raise FieldDoesNotExist
             queryset = Door.objects.filter(door_id = request_id) # door_id 유효성 검색
             if queryset.exists() # 유효할 때
@@ -63,10 +63,10 @@ class Device(APIView) :
 
 
     # 기기 추가
-    def post(self, request, format = None) : # request body에 device_id 포함되어있음 
+    def post(self, request, format = None) : # request body에 rfid_id 포함되어있음 
         try : 
             data = json.loads(request.body)
-            request_id = data.get('device_id', None)
+            request_id = data.get('rfid_id', None)
             if request_id == 'None' :
                 raise FieldDoesNotExist
             queryset = Device.objects.create(rfid_id = request_id)
@@ -80,10 +80,9 @@ class Device(APIView) :
 
 
     # 기기 삭제
-    def delete(self, request, format = None): # request body에 device_id 포함
+    def delete(self, request, device_id, format = None): # request URI에 device_id(자동생성되는 기기 고유 번호 != rfid_id) 포함
         try : 
-            data = json.loads(request.body)
-            request_id = data.get('device_id', None)
+            request_id = device_id
             if request_id == 'None':
                 raise FieldDoesNotExist
             queryset = Device.objects.get(device_id=request_id)
@@ -100,14 +99,15 @@ class Remote(APIView):
     # 원격 잠금 해제 기록 조회
     def get(self, request, format = None) : 
         #models.py의 class History 사용.
-        queryset = History.objects.all()
-        serializer = HistorySerializer(queryset, many = True)
+        queryset = RemoteHistory.objects.all()
+        serializer = RemoteHistorySerializer(queryset, many = True)
         res = {
             "remoteHistoryList": serializer.data
         }
         return Response(res, status = status.HTTP_200_OK)
 
     
+
 
 
 # 비디오 목록 조회
