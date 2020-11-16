@@ -7,7 +7,8 @@ class Door(models.Model) :
     door_id = models.CharField(max_length = 255, primary_key = True)
 
 class Device(models.Model) :
-    device_id = models.CharField(max_length = 255, primary_key = True)
+    device_id = models.AutoField(primary_key=True)
+    rfid_id = models.CharField(max_length = 255)
     created = models.DateTimeField(default = timezone.now)
 
 class Video(models.Model) :
@@ -18,7 +19,7 @@ class Lock(models.Model) :
     id = models.IntegerField(primary_key = True)
     state = models.BooleanField(default = True)
 
-class History(models.Model) :
+class RemoteHistory(models.Model) :
     device_name = models.CharField(max_length = 255)
     ctrtime = models.DateTimeField(default = timezone.now)
 
