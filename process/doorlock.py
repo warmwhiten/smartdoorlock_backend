@@ -46,11 +46,44 @@ def RFIDProcess(signalQueue):
 		# ID 목록을 미리 받아온 후 비교하도록 하면 ID 목록 업데이트가 안 될 수 있으니
 		# 태그가 된 경우 ID 목록을 받아오도록 해주세요.
 		#
+		# 기기 추가 상태인 경우를 확인해 기기 추가 상태라면 success를 True로 하지 않고
+		# 그냥 기기 목록에 태그된 기기의 ID를 추가합니다.
+		#
 		# success가 True인 경우 모터가 회전합니다.
 		#
 		# 아래 코드는 테스트를 위한 코드입니다. 아래 코드까지 지우고 작성해주세요.
 		time.sleep(30)
 		success = True
+		##############################################################
+		#
+		# 복잡한 것 같아 수도코드를 첨부합니다.
+		#
+		# success = False
+		# if RFID 태그가 됨:
+		#   deviceId = 방금 태그된 RFID 장치의 ID
+		#   devices = callApi(GET /api/device)
+		#   state = getFromIPC(원격 잠금해제 여부)
+		#
+		#   if state == 원격 잠금해제:
+		#     try:
+		#       if devices.find(deviceId):
+		#         raise 이미 등록된 RFID 장치
+		#       else:
+		#         callApi(POST /api/device, {rfid_id:deviceId})
+		#         (가능하다면) 완료됐다는 소리 출력 (딩동댕 정도?)
+		#     except:
+		#       (가능하다면) 경고음 출력 (삑!)
+		#     finally:
+		#       setToIPC(원격 잠금해제 여부, 원격 잠금해제 아님)
+		#   else: # 원격 잠금해제 상태가 아님 = 도어락 해제 프로세스
+		#     try:
+		#       if not devices.find(deviceId):
+		#         raise 등록되지 않은 RFID 장치
+		#       else:
+		#         success = True
+		#     except:
+		#       (가능하다면) 경고음 출력 (삑!)
+		#
 		##############################################################
 		if success:
 			print("등록된 RFID ID가 확인됨")
