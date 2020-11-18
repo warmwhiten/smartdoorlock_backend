@@ -50,9 +50,8 @@ def record() :
                     time.sleep(2)
                 camera.stop_recording()
                 camera.stop_preview()
-                
-                rec_time = time.time() - start_time
-                vid_time = rec_time.strftime("%H:%M:%S")
+            
+                vid_time = time.strftime("%M:%S", time.gmtime(time.time()-start_time))
 
                 # s3 upload
                 '''
