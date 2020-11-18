@@ -3,7 +3,10 @@ import boto3
 import botocore
 import time
 import datetime
+import django
 
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'src.settings')
+django.setup()
 from django.core import serializers
 from api.models import Video, Record
 from api.serializers import VideoSerializer, RecordSerializer
@@ -30,6 +33,10 @@ def record() :
 
     try:
         while state :
+            target = Record.objects.get(id = 1)
+            serializer = RecordSerializer(target, many = False)
+            state = serializer.data['recording']
+            
             if GPIO.input(pir_pin):  # motion detected
                 # take a video
                 camera.resolution = [320, 240]
