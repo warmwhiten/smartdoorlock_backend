@@ -64,7 +64,7 @@ class VideoDownload(APIView) :
             if not download_url :
                 raise ObjectDoesNotExist   
             res = {
-                's3_link' : download_url
+                's3link' : download_url
             }   # 응답 코드에 보낼 데이터
             return Response(res, status = status.HTTP_200_OK)
         except FieldDoesNotExist as error :
@@ -110,10 +110,6 @@ class Recording(APIView) :
         try :  
             target = Record.objects.filter(id = 1)
             target.update(recording = request.data['recording'])
-
-            if request.data['recording'] :
-                threading.Thread(target=record).start()
-
             return Response(status = status.HTTP_200_OK)
         except FieldDoesNotExist as error :
             return Response({
