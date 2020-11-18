@@ -27,3 +27,7 @@ class History(models.Model) :
 class Record(models.Model) :
     id = models.IntegerField(primary_key = True)
     recording = models.BooleanField(default = True)
+
+class AddDevice(models.Model) :
+    id = models.IntegerField(primary_key = True)
+    add = models.BooleanField(default = False)

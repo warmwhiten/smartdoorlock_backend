@@ -7,7 +7,7 @@ from django.core.exceptions import FieldDoesNotExist, ObjectDoesNotExist
 from django.shortcuts import render
 
 from api.videorecord import record
-from api.models import Video, Device, History, Lock, Record, Door
+from api.models import Video, Device, History, Lock, Record, Door, AddDevice
 from api.serializers import VideoSerializer, DeviceSerializer, HistorySerializer, RecordSerializer
 
 from rest_framework import status
