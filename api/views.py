@@ -64,7 +64,7 @@ class VideoDownload(APIView) :
             if not download_url :
                 raise ObjectDoesNotExist   
             res = {
-                's3_link' : download_url
+                's3link' : download_url
             }   # 응답 코드에 보낼 데이터
             return Response(res, status = status.HTTP_200_OK)
         except FieldDoesNotExist as error :

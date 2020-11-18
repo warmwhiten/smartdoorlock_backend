@@ -34,10 +34,14 @@ def record() :
                 # take a video
                 camera.resolution = [320, 240]
                 camera.start_preview()
+
                 now = datetime.datetime.now()
+                start_time = time.time()
+
                 vid_name = now.strftime('%Y%m%d-%H%M%S')
                 vid_path = path + '/' + vid_name + '.h264'
                 thumbnail_path = path + '/' + vid_name + '.jpg'
+
                 camera.start_recording(output=vid_path)
                 time.sleep(1)
                 camera.capture(thumbnail_path)
@@ -46,6 +50,9 @@ def record() :
                     time.sleep(2)
                 camera.stop_recording()
                 camera.stop_preview()
+                
+                rec_time = time.time() - start_time
+                vid_time = rec_time.strftime("%H:%M:%S")
 
                 # s3 upload
                 '''
@@ -56,7 +63,8 @@ def record() :
                 uploadVideo = {}
                 uploadVideo['vid_name'] = vid_name
                 uploadVideo['created'] = now
-                uploadVideo['thumb'] = 'http://' + S3_STORAGE_BUCKET_NAME + 's3.ap-northeast-2.amazonaws.com/' + vid_name + '_thumb'
+                uploadVideo['vid_time'] = vid_time
+                uploadVideo['thumb'] = S3_ACCESS_URL + vid_name + '_thumb'
                 serializer = VideoSerializer(data = uploadVideo)
                 serializer.save()
                 '''
