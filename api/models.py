@@ -32,4 +32,4 @@ class Record(models.Model) :
 
 class AddDevice(models.Model) :
     id = models.IntegerField(primary_key = True)
-    add = models.BooleanField(default = False)
+    state = models.BooleanField(default = False)

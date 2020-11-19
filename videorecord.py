@@ -10,12 +10,12 @@ django.setup()
 from django.core import serializers
 from api.models import Video, Record
 from api.serializers import VideoSerializer, RecordSerializer
-
+'''
 from boto3.session import Session
 from src.settings import AWS_REGION, S3_ACCESS_URL, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_STORAGE_BUCKET_NAME
 import RPi.GPIO as GPIO
 from picamera import PiCamera
-
+'''
 
 def record() :
     path = '/home/pi/recorded'  # save path
@@ -61,6 +61,7 @@ def record() :
                 vid_time = time.strftime("%M:%S", time.gmtime(time.time()-start_time))
 
                 # s3 upload
+                '''
                 s3 = boto3.client('s3', region_name = 'ap-northeast-2')
                 s3.upload_file(Filename = vid_path, Bucket = S3_STORAGE_BUCKET_NAME, Key = vid_name)
                 s3.upload_file(Filename = thumbnail_path, Bucket = S3_STORAGE_BUCKET_NAME, Key = vid_name + '_thumb')
@@ -72,6 +73,7 @@ def record() :
                 uploadVideo['thumb'] = S3_ACCESS_URL + vid_name + '_thumb'
                 serializer = VideoSerializer(data = uploadVideo)
                 serializer.save()
+                '''
                 print(vid_path, "upload success")
                 os.remove(vid_path)
             else:
