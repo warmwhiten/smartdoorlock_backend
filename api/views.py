@@ -5,15 +5,18 @@ from django.http import HttpResponse
 from django.core import serializers
 from django.core.exceptions import FieldDoesNotExist, ObjectDoesNotExist
 from django.shortcuts import render
+from django.contrib.auth.models import User
 
 from api.videorecord import record
 from api.models import Video, Device, RemoteHistory, Lock, Record, Door
-from api.serializers import VideoSerializer, DeviceSerializer, RemoteHistorySerializer, RecordSerializer
+from api.serializers import VideoSerializer, DeviceSerializer, RemoteHistorySerializer, RecordSerializer, DoorSerializer
 
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.authtoken.models import Token
+
 """
 from boto3.session import Session
 from src.settings import AWS_REGION
@@ -23,6 +26,7 @@ from src.settings import S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_STORAGE_BUCK
 import time
 from datetime import datetime, timedelta
 import json
+import uuid
 # Create your views here.
 
 #로그인 및 토큰 반환
@@ -34,9 +38,13 @@ class Login(APIView) :
                 raise FieldDoesNotExist
             queryset = Door.objects.filter(door_id = request_id) # door_id 유효성 검색
             if queryset.exists() :# 유효할 때
+                userid = uuid.uuid4()
+                pw = uuid.uuid4()
+                user = User.objects.create_user(username=str(userid), password=str(pw))
+                token = Token.objects.create(user=user)
                 res = {
                     'is_available' : True,
-                    'access_token' : '토큰' # 토큰 도입 후 수정 필요
+                    'access_token' : token.key 
                 }
             else :
                 res = {
@@ -50,6 +58,15 @@ class Login(APIView) :
                 'error' : "FieldDoesNotExist ",
                 'date' : datetime.now()
             }, status = status.HTTP_400_BAD_REQUEST)
+            
+'''
+    def post(self, request, format = None) : 
+        queryset = Door.objects.create(door_id = 12345)
+        print('냐냐')
+        return Response({
+                'msg' : 'doorid값 삽입 완료',
+            })
+'''
 
 #기기 관련 api
 class Devices(APIView) :
