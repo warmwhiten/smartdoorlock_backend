@@ -5,15 +5,18 @@ from django.http import HttpResponse
 from django.core import serializers
 from django.core.exceptions import FieldDoesNotExist, ObjectDoesNotExist
 from django.shortcuts import render
+from django.contrib.auth.models import User
 
 from api.videorecord import record
-from api.models import Video, Device, History, Lock, Record, Door, AddDevice
-from api.serializers import VideoSerializer, DeviceSerializer, HistorySerializer, RecordSerializer
+from api.models import Video, Device, RemoteHistory, Lock, Record, Door, AddDevice
+from api.serializers import VideoSerializer, DeviceSerializer, RemoteHistorySerializer, RecordSerializer
 
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.authtoken.models import Token
+
 """
 from boto3.session import Session
 from src.settings import AWS_REGION
@@ -22,7 +25,120 @@ from src.settings import S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_STORAGE_BUCK
 """
 import time
 from datetime import datetime, timedelta
+import json
+import uuid
 # Create your views here.
+
+#로그인 및 토큰 반환
+class Login(APIView) : 
+
+    def get(self, request, format = None) : # request query에 door_id 포함되어있음 : api/auth?door_id=12345
+        try :
+            request_id = request.GET.get('door_id', None)
+            if request_id == None :
+                raise FieldDoesNotExist
+            queryset = Door.objects.filter(door_id = request_id) # door_id 유효성 검색
+            if queryset.exists() :# 유효할 때
+                userid = uuid.uuid4()
+                pw = uuid.uuid4()
+                user = User.objects.create_user(username=str(userid), password=str(pw))
+                token = Token.objects.create(user=user)
+                res = {
+                    'is_available' : True,
+                    'access_token' : token.key 
+                }
+            else :
+                res = {
+                    'is_available' : False
+                }
+
+            return Response(res, status = status.HTTP_200_OK)
+
+        except FieldDoesNotExist as error :
+            return Response({
+                'error' : "FieldDoesNotExist ",
+                'date' : datetime.now()
+            }, status = status.HTTP_400_BAD_REQUEST)
+
+
+
+
+'''
+    def post(self, request, format = None) : 
+        queryset = Door.objects.create(door_id = 12345)
+        return Response({
+                'msg' : 'doorid값 삽입 완료',
+            })
+'''
+
+
+#기기 관련 api
+class Devices(APIView) :
+    # 기기 목록 조회
+    def get(self, request, format = None) : 
+        queryset = Device.objects.all()
+        serializer = DeviceSerializer(queryset, many = True)
+        res = {
+            'deviceList': serializer.data
+        }
+        return Response(res, status = status.HTTP_200_OK)
+
+
+    # 기기 추가
+    def post(self, request, format = None) : # request body에 rfid_id 포함되어있음 
+        try : 
+            print('냐냐냐냐냐냐')
+            print(request.body)
+            data = json.loads(request.body)
+            request_id = data.get('rfid_id', None)
+            if request_id == None :
+                raise FieldDoesNotExist
+            queryset = Device.objects.create(rfid_id = request_id)
+            return Response({
+                'msg' : 'success device add'
+            })
+
+        except FieldDoesNotExist as error : 
+            return Response({
+                'error' : "FieldDoesNotExist ",
+                'date' : datetime.now()
+            }, status = status.HTTP_400_BAD_REQUEST)
+
+
+
+    # 기기 삭제
+    def delete(self, request, device_id, format = None): # request URI에 device_id(자동생성되는 기기 고유 번호 != rfid_id) 포함
+        try : 
+            request_id = device_id
+            if request_id == None:
+                raise FieldDoesNotExist   
+            queryset = Device.objects.get(device_id=request_id)
+            queryset.delete()
+            return Response({
+                'msg' : 'success delete device'
+            })
+        
+        except FieldDoesNotExist as error : 
+             return Response({
+                'error' : "FieldDoesNotExist ",
+                'date' : datetime.now()
+            }, status = status.HTTP_400_BAD_REQUEST)
+
+# 원격 잠금 해제 
+class Remote(APIView):
+    # 원격 잠금 해제 기록 조회
+    def get(self, request, format = None) : 
+        #models.py의 class History 사용.
+        queryset = RemoteHistory.objects.all()
+        serializer = RemoteHistorySerializer(queryset, many = True)
+        res = {
+            "remoteHistoryList": serializer.data
+        }
+        return Response(res, status = status.HTTP_200_OK)
+
+    
+
+
 
 # 비디오 목록 조회
 class VideoList(APIView) : 
