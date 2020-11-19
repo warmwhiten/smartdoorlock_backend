@@ -81,9 +81,10 @@ def RFIDProcess(signalQueue):
                 if response.status_code == 200:
                     deviceList = (response.json()['deviceList'])
 
-                # state = getFromIPC(원격 잠금해제 여부)
-                target = Lock.objects.get(id=1)  # 장고 모델에서 잠금 상태 모델(Lock) 객체 가져옴
-                serializer = LockSerializer(target, many=False)  # python 데이터타입으로 변환
+                # state = getFromIPC(기기추가여부)
+
+                target = AddDevice.objects.get(id=1)  # 장고 모델에서 잠금 상태 모델(Lock) 객체 가져옴
+                serializer = AddDeviceSerializer(target, many=False)  # python 데이터타입으로 변환
                 state = serializer.data['state']  # state에 저장(boolean)
 
                 findDevice = False  # 기기 등록 여부
@@ -91,7 +92,7 @@ def RFIDProcess(signalQueue):
                     if deviceId in i["rfid"]:
                         findDevice = True
 
-                if state == False:  #  if state == 원격 잠금해제:
+                if state == True:  #  if state == 기기추가:
                     try:
                         if findDevice:  # if devices.find(deviceId):
                             print("이미 등록된 RFID 장치")  # raise
@@ -104,10 +105,10 @@ def RFIDProcess(signalQueue):
                     except:
                         print("경고음 삑 -!")
                         pass
-                    finally:  # setToIPC(원격 잠금해제 여부, 원격 잠금해제 아님)
-                        target.state = True
+                    finally:  # setToIPC(기기 추가 여부, 기기 추가 아님)
+                        target.state = False
                         target.save()
-                else:  # 원격 잠금해제 상태가 아님 = 도어락 해제 프로세스
+                else:  # 기기 추가 상태가 아님 = 도어락 해제 프로세스
                     try:
                         if not findDevice:  # if not devices.find(deviceId)
                             print("등록되지 않은 RFID 장치")  # raise

@@ -7,8 +7,8 @@ from django.core.exceptions import FieldDoesNotExist, ObjectDoesNotExist
 from django.shortcuts import render
 
 from api.videorecord import record
-from api.models import Video, Device, RemoteHistory, Lock, Record, Door
-from api.serializers import VideoSerializer, DeviceSerializer, RemoteHistorySerializer, RecordSerializer, LockSerializer
+from api.models import Video, Device, RemoteHistory, Lock, Record, Door, AddDevice
+from api.serializers import VideoSerializer, DeviceSerializer, RemoteHistorySerializer, RecordSerializer, LockSerializer, AddDeviceSerializer
 
 
 from rest_framework import status
@@ -68,6 +68,13 @@ class Devices(APIView) :
         try :
             print(request.body)
             data = json.loads(request.body)
+            target = AddDevice.objects.get(id=1)
+            serializer = AddDeviceSerializer(target, many=False)
+            state = serializer.data['state']
+            if state == False:
+                print(">> 기기추가 요청이 들어옴")
+                target.state = True
+                target.save()
             rfid_id = data.get('rfid_id', None)
             res = {
                 'rfid_id': rfid_id
