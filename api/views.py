@@ -9,7 +9,7 @@ from django.contrib.auth.models import User
 
 from api.videorecord import record
 from api.models import Video, Device, RemoteHistory, Lock, Record, Door
-from api.serializers import VideoSerializer, DeviceSerializer, RemoteHistorySerializer, RecordSerializer, DoorSerializer
+from api.serializers import VideoSerializer, DeviceSerializer, RemoteHistorySerializer, RecordSerializer
 
 from rest_framework import status
 from rest_framework.views import APIView
@@ -31,6 +31,7 @@ import uuid
 
 #로그인 및 토큰 반환
 class Login(APIView) : 
+
     def get(self, request, format = None) : # request query에 door_id 포함되어있음 : api/auth?door_id=12345
         try :
             request_id = request.GET.get('door_id', None)
@@ -58,15 +59,18 @@ class Login(APIView) :
                 'error' : "FieldDoesNotExist ",
                 'date' : datetime.now()
             }, status = status.HTTP_400_BAD_REQUEST)
-            
+
+
+
+
 '''
     def post(self, request, format = None) : 
         queryset = Door.objects.create(door_id = 12345)
-        print('냐냐')
         return Response({
                 'msg' : 'doorid값 삽입 완료',
             })
 '''
+
 
 #기기 관련 api
 class Devices(APIView) :
