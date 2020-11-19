@@ -15,7 +15,8 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Device',
             fields=[
-                ('rfid_id', models.CharField(max_length=255, primary_key=True, serialize=False)),
+                ('device_id', models.AutoField(primary_key=True, serialize=False)),
+                ('rfid_id', models.CharField(max_length=255)),
                 ('created', models.DateTimeField(default=django.utils.timezone.now)),
             ],
         ),
@@ -23,14 +24,6 @@ class Migration(migrations.Migration):
             name='Door',
             fields=[
                 ('door_id', models.CharField(max_length=255, primary_key=True, serialize=False)),
-            ],
-        ),
-        migrations.CreateModel(
-            name='History',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('device_name', models.CharField(max_length=255)),
-                ('ctrtime', models.DateTimeField(default=django.utils.timezone.now)),
             ],
         ),
         migrations.CreateModel(
@@ -45,6 +38,14 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.IntegerField(primary_key=True, serialize=False)),
                 ('recording', models.BooleanField(default=True)),
+            ],
+        ),
+        migrations.CreateModel(
+            name='RemoteHistory',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('device_name', models.CharField(max_length=255)),
+                ('ctrtime', models.DateTimeField(default=django.utils.timezone.now)),
             ],
         ),
         migrations.CreateModel(
