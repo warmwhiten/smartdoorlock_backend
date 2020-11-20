@@ -11,7 +11,6 @@ from api.videorecord import record
 from api.models import Video, Device, RemoteHistory, Lock, Record, Door, AddDevice
 from api.serializers import VideoSerializer, DeviceSerializer, RemoteHistorySerializer, RecordSerializer, LockSerializer, AddDeviceSerializer
 
-
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.request import Request

@@ -60,7 +60,7 @@ def record() :
                 start_time = time.time()
 
                 vid_name = now.strftime('%Y%m%d-%H%M%S')
-                vid_path = path + '/' + vid_name + '.h264'
+                vid_path = path + '/' + vid_name + '.mp4'
                 thumbnail_path = path + '/' + vid_name + '.jpg'
 
                 camera.start_recording(output=vid_path)
