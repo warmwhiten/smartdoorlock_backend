@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
+from django.contrib.auth.models import User
 
 # Create your models here.
 class Door(models.Model) :
@@ -31,4 +32,4 @@ class Record(models.Model) :
 
 class AddDevice(models.Model) :
     id = models.IntegerField(primary_key = True)
-    add = models.BooleanField(default = False)
+    state = models.BooleanField(default = False)

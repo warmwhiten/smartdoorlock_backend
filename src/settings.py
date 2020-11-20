@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'api',
     'rest_framework',
     'corsheaders',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -123,7 +124,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
-"""
+
 AWS_REGION = 'ap-northeast-2'
 AWS_SETTINGS = os.path.join(BASE_DIR, '.aws_key.json')
 awskey = json.loads(open(AWS_SETTINGS).read())
@@ -132,4 +133,3 @@ S3_ACCESS_KEY_ID = awskey['aws']['access_key_id']
 S3_SECRET_ACCESS_KEY = awskey['aws']['secret_access_key']
 S3_STORAGE_BUCKET_NAME = awskey['aws']['s3_bucket_name']
 S3_ACCESS_URL = awskey['aws']['s3_access_url']
-"""
