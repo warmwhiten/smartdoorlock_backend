@@ -117,6 +117,7 @@ class Devices(APIView) :
             if request_id == None :
                 raise FieldDoesNotExist
             queryset = Device.objects.create(rfid_id = request_id)
+            queryset.save()
             return Response({
                 'msg' : 'success device add'
             })
@@ -168,12 +169,16 @@ class Remote(APIView):
             if device_name == None :
                 raise FieldDoesNotExist
             else:
-                # 잠금 상태 변경
                 target = Lock.objects.get(id=1)
                 serializer = LockSerializer(target, many=False)
                 state = serializer.data['state']
                 if state == True:
                     print(">> 원격 잠금해제 요청이 들어옴")
+                    # 기록에 저장
+                    now = datetime.datetime.now()
+                    queryset = Device.objects.create(device_name=device_name, created=now)
+                    queryset.save()
+                    # 잠금 해제 상태로 변경
                     target.state = False
                     target.save()
             return Response({
