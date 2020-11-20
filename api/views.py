@@ -111,8 +111,8 @@ class Devices(APIView) :
     # 기기 추가
     def post(self, request, format = None) : # request body에 rfid_id 포함되어있음 
         try : 
-            print(request.body)
-            data = json.loads(request.body)
+            print(request.data)
+            data = {x: request.POST.get(x) for x in request.POST.keys()}
             request_id = data.get('rfid_id', None)
             if request_id == None :
                 raise FieldDoesNotExist

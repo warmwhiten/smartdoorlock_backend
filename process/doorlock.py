@@ -7,7 +7,10 @@ import requests
 from multiprocessing import Queue
 import os
 import django
+import datetime
+import sys
 
+sys.path.append('/home/pi/Desktop/smartdoorlock-backend')
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'src.settings')
 django.setup()
 
@@ -16,11 +19,12 @@ from api.models import Lock, AddDevice, Device
 from api.serializers import LockSerializer, AddDeviceSerializer, DeviceSerializer
 
 
+GPIO.setmode(GPIO.BCM)
 MFIAREReader = mfrc522.MFRC522()  # RFID Reader
 BASE_URL = "http://127.0.0.1:8000"
 PIN = {
-    'Motor_MT_N': 17,
-    'Motor_MT_P': 4
+    'Motor_MT_N': 12,
+    'Motor_MT_P': 6
 }
 
 
@@ -51,48 +55,38 @@ class Motor:
 
 def RFIDProcess(signalQueue):
     while True:
-        """
-        # RFID ID가 등록된 기기의 ID인 경우 success에 True를 넣습니다.
-        #
-        # RFID 태그가 된 경우 API에 요청을 보내 (GET /api/device) ID 목록을
-        # 가져온 후 이 목록 안에 태그된 기기의 ID가 있는지 여부를 확인하는 방식으로
-        # 동작하면 될 것 같습니다.
-        #
-        # ID 목록을 미리 받아온 후 비교하도록 하면 ID 목록 업데이트가 안 될 수 있으니
-        # 태그가 된 경우 ID 목록을 받아오도록 해주세요.
-        #
-        # 기기 추가 상태인 경우를 확인해 기기 추가 상태라면 success를 True로 하지 않고
-        # 그냥 기기 목록에 태그된 기기의 ID를 추가합니다.
-        #
-        # success가 True인 경우 모터가 회전합니다.
-        """
         success = False
         try:
             (readerStatus, tagType) = MFIAREReader.MFRC522_Request(MFIAREReader.PICC_REQIDL)
             (readerStatus, uid) = MFIAREReader.MFRC522_Anticoll()  # uid = [1, 2, 3, 4, 5]
             if readerStatus == MFIAREReader.MI_OK:  # if RFID 태그가 됨:
+		time.sleep(1)
+                print("RIFD tag")
                 deviceId = ""   # 방금 태그된 RFID 장치의 ID.
                 for i in uid:
                     deviceId += str(i)  # deviceId = 12345
+                print("DeviceID : ", deviceId)
 
                 # devices = callApi(GET /api/device)  # 기기 조회
                 response = requests.get(BASE_URL+"/api/device")
                 deviceList = []  # 기기 목록
                 if response.status_code == 200:
+                    print("Success view device list")
                     deviceList = (response.json()['deviceList'])
-
+                print("device list : ", deviceList)
                 # state = getFromIPC(기기추가여부)
 
-                target = AddDevice.objects.get(id=1)  # 장고 모델에서 잠금 상태 모델(Lock) 객체 가져옴
+                target = AddDevice.objects.get(id=1)  # 장고 모델에서 AddDevice 객체 가져옴
                 serializer = AddDeviceSerializer(target, many=False)  # python 데이터타입으로 변환
                 state = serializer.data['state']  # state에 저장(boolean)
 
                 findDevice = False  # 기기 등록 여부
                 for i in deviceList:
-                    if deviceId in i["rfid"]:
+                    if deviceId in i["rfid_id"]:
                         findDevice = True
-
+                print("findDevice : ", findDevice)
                 if state == True:  #  if state == 기기추가:
+                    print("1-1 AddDevice is True")
                     try:
                         if findDevice:  # if devices.find(deviceId):
                             print("이미 등록된 RFID 장치")  # raise
@@ -109,6 +103,7 @@ def RFIDProcess(signalQueue):
                         target.state = False
                         target.save()
                 else:  # 기기 추가 상태가 아님 = 도어락 해제 프로세스
+                    print("1-2 Open Door")
                     try:
                         if not findDevice:  # if not devices.find(deviceId)
                             print("등록되지 않은 RFID 장치")  # raise
@@ -123,23 +118,12 @@ def RFIDProcess(signalQueue):
                 print("등록된 RFID ID가 확인됨")
                 signalQueue.put("RFID")
         except KeyboardInterrupt:
-            pass
-            # GPIO.cleanup()
+            GPIO.cleanup()
+            break
 
 
 def RemoteProcess(signalQueue):
     while True:
-        """
-        # 원격 잠금해제 요청이 들어온 경우 success에 True를 넣습니다.
-        # 원격 잠금해제 요청은 IPC로 처리합니다.
-        # 지우님과 협업하여 작업해주세요.
-        #
-        # 제 생각으로는 한 파일에 대해서 (ex ~/IPC.txt) API에서는 write하고
-        # 도어락 프로세스에서는 read하는 방법으로 하면 될 것 같습니다.
-        # 원격 잠금해제 요청이 들어온 경우 API에서 write하도록 하면 되겠죠..?
-        #
-        # success가 True인 경우 모터가 회전합니다.
-        """
         success = False
         target = Lock.objects.get(id=1)  # 장고 모델에서 잠금 상태 모델(Lock) 객체 가져옴
         serializer = LockSerializer(target, many=False)  # python 데이터타입으로 변환
@@ -162,27 +146,27 @@ def signalProcess(signalQueue):
 
 
 def doorProcess(doorQueue):
-    motor = Motor()
+    # motor = Motor()
     while True:
         signal = doorQueue.get()
         print("{} 신호를 받아 문 열기 동작 수행 시작".format(signal))
         if signal is not None:
             print("문 열림")
-            motor.rotate(Motor.LEFT)
+            #motor.rotate(Motor.LEFT)
             time.sleep(0.5)
-            motor.stop()
+            #motor.stop()
             time.sleep(5)  # 열린 후 5초 지나면 닫힘
             print("문 닫힘")
-            motor.rotate(Motor.RIGHT)
+            #motor.rotate(Motor.RIGHT)
             time.sleep(0.5)
-            motor.stop()
+            #motor.stop()
 
 
 if __name__ == '__main__':
     try:
-        # GPIO.setmode(GPIO.BCM)
-        # GPIO.setup(PIN['Motor_MT_N'], GPIO.OUT, initial=GPIO.LOW)
-        # GPIO.setup(PIN['Motor_MT_P'], GPIO.OUT, initial=GPIO.LOW)
+        GPIO.setmode(GPIO.BCM)
+        #GPIO.setup(PIN['Motor_MT_N'], GPIO.OUT, initial=GPIO.LOW)
+        #GPIO.setup(PIN['Motor_MT_P'], GPIO.OUT, initial=GPIO.LOW)
 
         signalQueue = Queue()
         pid = os.fork()
@@ -192,6 +176,7 @@ if __name__ == '__main__':
             if pid == 0:
                 while True:
                     signal = signalQueue.get()
+                    print(signal)
                     print("{} 신호가 들어와 전달 준비".format(signal))
                     print(signal)
                     if signal is not None:
@@ -202,7 +187,6 @@ if __name__ == '__main__':
         else:
             signalProcess(signalQueue)
     except Exception as e:
-        print(e)
+        raise e
     finally:
-        pass
-        # GPIO.cleanup()
+        GPIO.cleanup()
