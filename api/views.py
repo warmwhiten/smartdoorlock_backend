@@ -7,7 +7,6 @@ from django.core.exceptions import FieldDoesNotExist, ObjectDoesNotExist
 from django.shortcuts import render
 from django.contrib.auth.models import User
 
-from api.videorecord import record
 from api.models import Video, Device, RemoteHistory, Lock, Record, Door, AddDevice
 from api.serializers import VideoSerializer, DeviceSerializer, RemoteHistorySerializer, RecordSerializer, LockSerializer, AddDeviceSerializer
 
@@ -160,7 +159,7 @@ class Remote(APIView):
         return Response(res, status = status.HTTP_200_OK)
 
     # 원격 잠금 해제
-    def post(self, request, format = None) :
+    def put(self, request, format = None) :
         try:
             print(request.body)
             data = json.loads(request.body)
@@ -211,7 +210,8 @@ class VideoList(APIView) :
             s3 = session.client('s3')
             
             target = Video.objects.get(vid_name = request_id)
-            s3.delete_object(Bucket = S3_STORAGE_BUCKET_NAME, Key = str(target.vid_name))
+            s3.delete_object(Bucket = S3_STORAGE_BUCKET_NAME, Key = str(target.vid_name) + '.mp4')
+            s3.delete_object(Bucket = S3_STORAGE_BUCKET_NAME, Key = str(target.vid_name) + '_thumb.jpg')
             target.delete()
             return Response(status = status.HTTP_200_OK)
         except FieldDoesNotExist as error :
@@ -227,7 +227,7 @@ class VideoDownload(APIView) :
             request_id = vid_name
             if request_id == 'None' :
                 raise FieldDoesNotExist   
-            download_url = S3_ACCESS_URL + str(request_id)  # S3 다운로드 링크 변환
+            download_url = S3_ACCESS_URL + str(request_id) + '.mp4'  # S3 다운로드 링크 변환
             if not download_url :
                 raise ObjectDoesNotExist   
             res = {
@@ -253,7 +253,7 @@ class CheckDate(APIView) :
             session = boto3.session.Session(aws_access_key_id = S3_ACCESS_KEY_ID, aws_secret_access_key = S3_SECRET_ACCESS_KEY, region_name = AWS_REGION)
             s3 = session.client('s3')
             for delvid in quaryset :
-                s3.delete_object(Bucket = S3_STORAGE_BUCKET_NAME, Key = str(delvid.vid_name))
+                s3.delete_object(Bucket = S3_STORAGE_BUCKET_NAME, Key = str(delvid.vid_name) + '.mp4')
             quaryset.delete()
             return Response(status = status.HTTP_200_OK)
 

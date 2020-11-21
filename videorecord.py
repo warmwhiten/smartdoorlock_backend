@@ -83,14 +83,14 @@ def record() :
                 else:
                     ACCESS_KEY, SECRET_KEY = secret
                     s3 = boto3.client('s3', region_name = 'ap-northeast-2', aws_access_key_id=ACCESS_KEY, aws_secret_access_key=SECRET_KEY)
-                    s3.upload_file(Filename = vid_path, Bucket = S3_STORAGE_BUCKET_NAME, Key = vid_name)
-                    s3.upload_file(Filename = thumbnail_path, Bucket = S3_STORAGE_BUCKET_NAME, Key = vid_name + '_thumb')
+                    s3.upload_file(Filename = vid_path, Bucket = S3_STORAGE_BUCKET_NAME, Key = vid_name + '.mp4')
+                    s3.upload_file(Filename = thumbnail_path, Bucket = S3_STORAGE_BUCKET_NAME, Key = vid_name + '_thumb.jpg')
     
                     uploadVideo = {}
                     uploadVideo['vid_name'] = vid_name
                     uploadVideo['created'] = now
                     uploadVideo['vid_time'] = vid_time
-                    uploadVideo['thumb'] = S3_ACCESS_URL + vid_name + '_thumb'
+                    uploadVideo['thumb'] = S3_ACCESS_URL + vid_name + '_thumb.jpg'
                     serializer = VideoSerializer(data = uploadVideo)
                     serializer.is_valid()
                     serializer.save()
