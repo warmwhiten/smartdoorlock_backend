@@ -21,17 +21,6 @@ from picamera import PiCamera
 
 
 
-def get_secret():
-    file_path = "/home/pi/Desktop/smartdoorlock-backend/.aws_key.json"
-    if os.path.exists(file_path):
-        with open(file_path) as fp:
-            secret_file = json.load(fp)['aws']
-            access_key_id = secret_file.get('access_key_id', None)
-            secret_access_key = secret_file.get('secret_access_key', None)
-            return (access_key_id, secret_access_key)
-    else:
-        return False
-
 def record() :
     path = '/home/pi/recorded'  # save path
 
@@ -60,7 +49,7 @@ def record() :
                 start_time = time.time()
 
                 vid_name = now.strftime('%Y%m%d-%H%M%S')
-                vid_path = path + '/' + vid_name + '.mp4'
+                vid_path = path + '/' + vid_name + '.h264'
                 thumbnail_path = path + '/' + vid_name + '.jpg'
 
                 camera.start_recording(output=vid_path)
@@ -75,28 +64,21 @@ def record() :
                 vid_time = time.strftime("%M:%S", time.gmtime(time.time()-start_time))
 
                 # s3 upload
-                secret = get_secret()
-                if not secret:
-                    print(vid_path, "upload failed")
-                    print("please make credential file")
-                    exit(0)
-                else:
-                    ACCESS_KEY, SECRET_KEY = secret
-                    s3 = boto3.client('s3', region_name = 'ap-northeast-2', aws_access_key_id=ACCESS_KEY, aws_secret_access_key=SECRET_KEY)
-                    s3.upload_file(Filename = vid_path, Bucket = S3_STORAGE_BUCKET_NAME, Key = vid_name + '.mp4')
-                    s3.upload_file(Filename = thumbnail_path, Bucket = S3_STORAGE_BUCKET_NAME, Key = vid_name + '_thumb.jpg')
-    
-                    uploadVideo = {}
-                    uploadVideo['vid_name'] = vid_name
-                    uploadVideo['created'] = now
-                    uploadVideo['vid_time'] = vid_time
-                    uploadVideo['thumb'] = S3_ACCESS_URL + vid_name + '_thumb.jpg'
-                    serializer = VideoSerializer(data = uploadVideo)
-                    serializer.is_valid()
-                    serializer.save()
-                    print(vid_path, "upload success")
-                    os.remove(vid_path)
-                    os.remove(thumbnail_path)
+                s3 = boto3.client('s3', region_name = 'ap-northeast-2', aws_access_key_id=S3_ACCESS_KEY_ID, aws_secret_access_key=S3_SECRET_ACCESS_KEY)
+                s3.upload_file(Filename = vid_path, Bucket = S3_STORAGE_BUCKET_NAME, Key = vid_name + '.h264')
+                s3.upload_file(Filename = thumbnail_path, Bucket = S3_STORAGE_BUCKET_NAME, Key = vid_name + '_thumb.jpg')
+
+                uploadVideo = {}
+                uploadVideo['vid_name'] = vid_name
+                uploadVideo['created'] = now
+                uploadVideo['vid_time'] = vid_time
+                uploadVideo['thumb'] = S3_ACCESS_URL + vid_name + '_thumb.jpg'
+                serializer = VideoSerializer(data = uploadVideo)
+                serializer.is_valid()
+                serializer.save()
+                print(vid_path, "upload success")
+                os.remove(vid_path)
+                os.remove(thumbnail_path)
             else:
                 camera.stop_preview()
     except KeyboardInterrupt:
