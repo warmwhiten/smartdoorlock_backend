@@ -210,7 +210,7 @@ class VideoList(APIView) :
             s3 = session.client('s3')
             
             target = Video.objects.get(vid_name = request_id)
-            s3.delete_object(Bucket = S3_STORAGE_BUCKET_NAME, Key = str(target.vid_name) + '.h264')
+            s3.delete_object(Bucket = S3_STORAGE_BUCKET_NAME, Key = str(target.vid_name) + '.mp4')
             s3.delete_object(Bucket = S3_STORAGE_BUCKET_NAME, Key = str(target.vid_name) + '_thumb.jpg')
             target.delete()
             return Response(status = status.HTTP_200_OK)
@@ -227,7 +227,7 @@ class VideoDownload(APIView) :
             request_id = vid_name
             if request_id == 'None' :
                 raise FieldDoesNotExist   
-            download_url = S3_ACCESS_URL + str(request_id) + '.h264'  # S3 다운로드 링크 변환
+            download_url = S3_ACCESS_URL + str(request_id) + '.mp4'  # S3 다운로드 링크 변환
             if not download_url :
                 raise ObjectDoesNotExist   
             res = {
