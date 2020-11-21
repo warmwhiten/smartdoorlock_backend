@@ -51,7 +51,7 @@ def record() :
                 vid_name = now.strftime('%Y%m%d-%H%M%S')
                 vid_path = path + '/' + vid_name
                 h264_vid_path = vid_path + '.h264'
-                mp4_vid_path = vid_path + '.h264'
+                mp4_vid_path = vid_path + '.mp4'
                 thumbnail_path = path + '/' + vid_name + '.jpg'
 
                 camera.start_recording(output=h264_vid_path)
@@ -69,7 +69,7 @@ def record() :
 
                 # s3 upload
                 s3 = boto3.client('s3', region_name = 'ap-northeast-2', aws_access_key_id=S3_ACCESS_KEY_ID, aws_secret_access_key=S3_SECRET_ACCESS_KEY)
-                s3.upload_file(Filename = vid_path, Bucket = S3_STORAGE_BUCKET_NAME, Key = vid_name + '.mp4')
+                s3.upload_file(Filename = mp4_vid_path, Bucket = S3_STORAGE_BUCKET_NAME, Key = vid_name + '.mp4')
                 s3.upload_file(Filename = thumbnail_path, Bucket = S3_STORAGE_BUCKET_NAME, Key = vid_name + '_thumb.jpg')
 
                 uploadVideo = {}
@@ -81,7 +81,8 @@ def record() :
                 serializer.is_valid()
                 serializer.save()
                 print(vid_path, "upload success")
-                os.remove(vid_path)
+                os.remove(h264_vid_path)
+                os.remove(mp4_vid_path)
                 os.remove(thumbnail_path)
             else:
                 camera.stop_preview()
