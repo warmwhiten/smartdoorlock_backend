@@ -3,7 +3,7 @@ import botocore
 import threading
 from django.http import HttpResponse
 from django.core import serializers
-from django.core.exceptions import FieldDoesNotExist, ObjectDoesNotExist
+from django.core.exceptions import FieldDoesNotExist, ObjectDoesNotExist, PermissionDenied
 from django.shortcuts import render
 from django.contrib.auth.models import User
 
@@ -15,6 +15,7 @@ from rest_framework.views import APIView
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
+from rest_framework.authentication import TokenAuthentication
 
 from boto3.session import Session
 from src.settings import AWS_REGION
@@ -61,29 +62,44 @@ class Login(APIView) :
 
 
 
-'''
+
     def post(self, request, format = None) : 
         queryset = Door.objects.create(door_id = 12345)
         return Response({
                 'msg' : 'doorid값 삽입 완료',
             })
-'''
+
 
 
 #기기 관련 api
 class Devices(APIView) :
     # 기기 목록 조회
-    def get(self, request, format = None) : 
-        queryset = Device.objects.all()
-        serializer = DeviceSerializer(queryset, many = True)
-        res = {
-            'deviceList': serializer.data
-        }
-        return Response(res, status = status.HTTP_200_OK)
+    def get(self, request, format = None) :
+        try :
+            if request.auth == None :
+                raise PermissionDenied
+            queryset = Device.objects.all()
+            serializer = DeviceSerializer(queryset, many = True)
+            res = {
+                'deviceList': serializer.data
+            }
+            return Response(res, status = status.HTTP_200_OK)
+        except FieldDoesNotExist as error :
+            return Response({
+                'error' : "FieldDoesNotExist ",
+                'date' : datetime.now()
+            }, status = status.HTTP_400_BAD_REQUEST)
+        except PermissionDenied as error :
+            return Response({
+                'error' : "PermissionDenied",
+                'date' : datetime.now()
+            }, status = status.HTTP_400_BAD_REQUEST)            
 
     # 기기 추가 요청
     def put(self, request, format = None) :
         try :
+            if request.auth == None :
+                raise PermissionDenied
             print(request.body)
             data = json.loads(request.body)
             target = AddDevice.objects.get(id=1)
@@ -105,10 +121,17 @@ class Devices(APIView) :
                 'error' : "FieldDoesNotExist ",
                 'date' : datetime.now()
             }, status = status.HTTP_400_BAD_REQUEST)
+        except PermissionDenied as error :
+            return Response({
+                'error' : "PermissionDenied",
+                'date' : datetime.now()
+            }, status = status.HTTP_400_BAD_REQUEST)         
 
     # 기기 추가
     def post(self, request, format = None) : # request body에 rfid_id 포함되어있음 
         try : 
+            if request.auth == None :
+                raise PermissionDenied            
             print(request.data)
             data = {x: request.POST.get(x) for x in request.POST.keys()}
             request_id = data.get('rfid_id', None)
@@ -125,12 +148,19 @@ class Devices(APIView) :
                 'error' : "FieldDoesNotExist ",
                 'date' : datetime.now()
             }, status = status.HTTP_400_BAD_REQUEST)
+        except PermissionDenied as error :
+            return Response({
+                'error' : "PermissionDenied",
+                'date' : datetime.now()
+            }, status = status.HTTP_400_BAD_REQUEST) 
 
 
 
     # 기기 삭제
     def delete(self, request, device_id, format = None): # request URI에 device_id(자동생성되는 기기 고유 번호 != rfid_id) 포함
-        try : 
+        try :
+            if request.auth == None :
+                raise PermissionDenied 
             request_id = device_id
             if request_id == None:
                 raise FieldDoesNotExist   
@@ -145,22 +175,37 @@ class Devices(APIView) :
                 'error' : "FieldDoesNotExist ",
                 'date' : datetime.now()
             }, status = status.HTTP_400_BAD_REQUEST)
+        except PermissionDenied as error :
+            return Response({
+                'error' : "PermissionDenied",
+                'date' : datetime.now()
+            }, status = status.HTTP_400_BAD_REQUEST) 
 
 # 원격 잠금 해제 
 class Remote(APIView):
     # 원격 잠금 해제 기록 조회
     def get(self, request, format = None) : 
         #models.py의 class History 사용.
-        queryset = RemoteHistory.objects.all()
-        serializer = RemoteHistorySerializer(queryset, many = True)
-        res = {
-            "remoteHistoryList": serializer.data
-        }
-        return Response(res, status = status.HTTP_200_OK)
+        try:
+            if request.auth == None :
+                raise PermissionDenied            
+            queryset = RemoteHistory.objects.all()
+            serializer = RemoteHistorySerializer(queryset, many = True)
+            res = {
+                "remoteHistoryList": serializer.data
+            }
+            return Response(res, status = status.HTTP_200_OK)
+        except PermissionDenied as error : 
+            return Response({
+                'error' : "FieldDoesNotExist ",
+                'date' : datetime.now()
+            }, status = status.HTTP_400_BAD_REQUEST)
 
     # 원격 잠금 해제
     def put(self, request, format = None) :
         try:
+            if request.auth == None :
+                raise PermissionDenied 
             print(request.body)
             data = json.loads(request.body)
             device_name = data.get('device_name', None)
@@ -182,27 +227,48 @@ class Remote(APIView):
             return Response({
                 'msg' : 'success remote unlock'
             }, status = status.HTTP_200_OK)
+
         except FieldDoesNotExist as error:
             return Response({
                 'error': "FieldDoesNotExist ",
                 'date': datetime.now()
             }, status=status.HTTP_400_BAD_REQUEST)
+        except PermissionDenied as error :
+            return Response({
+                'error' : "PermissionDenied",
+                'date' : datetime.now()
+            }, status = status.HTTP_400_BAD_REQUEST) 
 
 
 
 # 비디오 목록 조회
 class VideoList(APIView) : 
     def get(self, request, format = None) :
-        queryset = Video.objects.all()
-        serializer = VideoSerializer(queryset, many = True)
-        res = {     
-            'videoList': serializer.data
-        }       # 응답코드에 포함될 데이터
-        return Response(res, status = status.HTTP_200_OK) 
+        try :
+            if request.auth == None :
+                raise PermissionDenied             
+            queryset = Video.objects.all()
+            serializer = VideoSerializer(queryset, many = True)
+            res = {     
+                'videoList': serializer.data
+            }       # 응답코드에 포함될 데이터
+            return Response(res, status = status.HTTP_200_OK)
+        except FieldDoesNotExist as error:
+            return Response({
+                'error': "FieldDoesNotExist ",
+                'date': datetime.now()
+            }, status=status.HTTP_400_BAD_REQUEST)
+        except PermissionDenied as error :
+            return Response({
+                'error' : "PermissionDenied",
+                'date' : datetime.now()
+            }, status = status.HTTP_400_BAD_REQUEST) 
 
 # 비디오 수동 삭제
     def delete(self, request, vid_name, format = None) :  # request URI에 vid_name가 포함되어있음 : api/video/{vid_name}
         try : 
+            if request.auth == None :
+                raise PermissionDenied             
             request_id = vid_name
             if request_id == 'None' :
                 raise FieldDoesNotExist
@@ -219,11 +285,18 @@ class VideoList(APIView) :
                 'error' : "FieldDoesNotExist ",
                 'date' : datetime.now()
             }, status = status.HTTP_400_BAD_REQUEST)
+        except PermissionDenied as error :
+            return Response({
+                'error' : "PermissionDenied",
+                'date' : datetime.now()
+            }, status = status.HTTP_400_BAD_REQUEST)         
 
 # 비디오 확인(다운로드)
 class VideoDownload(APIView) :
     def get(self, request, vid_name, format = None) : # 요청한 URI에 vid_name가 포함되어있음
-        try :   
+        try :
+            if request.auth == None :
+                raise PermissionDenied   
             request_id = vid_name
             if request_id == 'None' :
                 raise FieldDoesNotExist   
@@ -244,6 +317,11 @@ class VideoDownload(APIView) :
                 'error' : "ObjectDoesNotExist",
                 'date' : datetime.now()
             }, status = status.HTTP_404_NOT_FOUND)
+        except PermissionDenied as error :
+            return Response({
+                'error' : "PermissionDenied",
+                'date' : datetime.now()
+            }, status = status.HTTP_400_BAD_REQUEST) 
 
 # 비디오 자동 삭제
 class CheckDate(APIView) :
@@ -261,24 +339,28 @@ class CheckDate(APIView) :
 class Recording(APIView) :
     def get(self, request, format = None) :
         try :
+            if request.auth == None :
+                raise PermissionDenied
             target = Record.objects.get(id = 1)
             serializer = RecordSerializer(target, many = False)
             res = {
                 'recording' : serializer.data['recording']
             }
             return Response(res, status = status.HTTP_200_OK)
-        except FieldDoesNotExist as error :
+        except PermissionDenied as error :
             return Response({
-                'error' : "FieldDoesNotExist ",
+                'error' : "PermissionDenied",
                 'date' : datetime.now()
-            }, status = status.HTTP_400_BAD_REQUEST)
+            }, status = status.HTTP_400_BAD_REQUEST) 
 
     def put(self, request, format = None) :
-        try :  
+        try :
+            if request.auth == None :
+                raise PermissionDenied
             target = Record.objects.filter(id = 1)
             target.update(recording = request.data['recording'])
             return Response(status = status.HTTP_200_OK)
-        except FieldDoesNotExist as error :
+        except PermissionDenied as error :
             return Response({
                 'error' : "FieldDoesNotExist ",
                 'date' : datetime.now()
