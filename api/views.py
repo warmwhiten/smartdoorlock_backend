@@ -133,8 +133,7 @@ class Devices(APIView) :
             if request.auth == None :
                 raise PermissionDenied            
             print(request.data)
-            data = {x: request.POST.get(x) for x in request.POST.keys()}
-            request_id = data.get('rfid_id', None)
+            request_id = request.data.get('rfid_id', None)
             if request_id == None :
                 raise FieldDoesNotExist
             queryset = Device.objects.create(rfid_id = request_id)
