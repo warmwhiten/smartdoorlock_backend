@@ -202,7 +202,7 @@ class Remote(APIView):
             }, status = status.HTTP_400_BAD_REQUEST)
 
     # 원격 잠금 해제
-    def put(self, request, format = None) :
+    def post(self, request, format = None) :
         try:
             if request.auth == None :
                 raise PermissionDenied 
@@ -218,8 +218,8 @@ class Remote(APIView):
                 if state == True:
                     print(">> 원격 잠금해제 요청이 들어옴")
                     # 기록에 저장
-                    now = datetime.datetime.now()
-                    queryset = Device.objects.create(device_name=device_name, created=now)
+                    now = datetime.now()
+                    queryset = RemoteHistory.objects.create(device_name=device_name, created=now)
                     queryset.save()
                     # 잠금 해제 상태로 변경
                     target.state = False
