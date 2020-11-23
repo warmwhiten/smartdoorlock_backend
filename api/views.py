@@ -96,10 +96,12 @@ class Devices(APIView) :
             }, status = status.HTTP_400_BAD_REQUEST)            
 
     # 기기 추가 요청
-    def put(self, request, format = None) :
+    def put(self, request, device_id, format = None) :
         try :
             if request.auth == None :
                 raise PermissionDenied
+            if device_id != "request" :
+                raise FieldDoesNotExist
             print(request.body)
             data = json.loads(request.body)
             target = AddDevice.objects.get(id=1)
@@ -109,13 +111,9 @@ class Devices(APIView) :
                 print(">> 기기추가 요청이 들어옴")
                 target.state = True
                 target.save()
-            rfid_id = data.get('rfid_id', None)
-            res = {
-                'rfid_id': rfid_id
-            }
-            if rfid_id == None:
-                raise FieldDoesNotExist
-            return Response(res, status = status.HTTP_200_OK)
+            return Response({
+                'msg' : 'changed state successfully'
+            }, status = status.HTTP_200_OK)
         except FieldDoesNotExist as error :
             return Response({
                 'error' : "FieldDoesNotExist ",
