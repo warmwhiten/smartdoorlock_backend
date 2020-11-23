@@ -103,7 +103,6 @@ class Devices(APIView) :
             if device_id != "request" :
                 raise FieldDoesNotExist
             print(request.body)
-            data = json.loads(request.body)
             target = AddDevice.objects.get(id=1)
             serializer = AddDeviceSerializer(target, many=False)
             state = serializer.data['state']
