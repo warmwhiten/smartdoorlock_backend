@@ -353,8 +353,10 @@ class Recording(APIView) :
         try :
             if request.auth == None :
                 raise PermissionDenied
+            print(request.body)
+            data = json.loads(request.body)
             target = Record.objects.filter(id = 1)
-            target.update(recording = request.data['recording'])
+            target.update(recording = data['recording'])
             return Response(status = status.HTTP_200_OK)
         except PermissionDenied as error :
             return Response({
