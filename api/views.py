@@ -136,9 +136,16 @@ class Devices(APIView) :
                 raise FieldDoesNotExist
             queryset = Device.objects.create(rfid_id = request_id)
             queryset.save()
+            
+            select = Device.objects.filter(rfid_id = request_id).values()
+            device_id = select[0]['device_id']
+            rfid_id = select[0]['rfid_id']
+            created = select[0]['created']
             return Response({
-                'msg' : 'success device add'
-            })
+                "device_id" : device_id,
+                "rfid_id" : rfid_id,
+                "created" : created
+            }, status = status.HTTP_200_OK)
 
         except FieldDoesNotExist as error : 
             return Response({
