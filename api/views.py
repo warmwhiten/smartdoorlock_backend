@@ -61,10 +61,11 @@ class Login(APIView) :
 
 
 
-
-
     def post(self, request, format = None) : 
-        queryset = Door.objects.create(door_id = 12345)
+        Door.objects.create(door_id = 12345)
+        Lock.objects.create(id=1)
+        Record.objects.create(id=1)
+        AddDevice(id=1)
         return Response({
                 'msg' : 'doorid값 삽입 완료',
             })
